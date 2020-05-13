@@ -1,5 +1,5 @@
 {
-  "name": "ali-oss-upload",
+  "name": "@banyudu/ali-oss-upload",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
