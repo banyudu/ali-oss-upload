@@ -6,6 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "bin": {
+    "ali-oss-upload": "./index.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/banyudu/ali-oss-upload.git"
@@ -20,5 +23,10 @@
   "bugs": {
     "url": "https://github.com/banyudu/ali-oss-upload/issues"
   },
-  "homepage": "https://github.com/banyudu/ali-oss-upload#readme"
+  "homepage": "https://github.com/banyudu/ali-oss-upload#readme",
+  "dependencies": {
+    "ali-oss": "^6.8.0",
+    "chalk": "^4.0.0",
+    "yargs": "^15.3.1"
+  }
 }
