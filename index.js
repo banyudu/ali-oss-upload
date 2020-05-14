@@ -62,7 +62,8 @@ const ossClient = new OSS({
   accessKeyId: argv.accessKeyId,
   accessKeySecret: argv.accessKeySecret,
   bucket: argv.bucket,
-  agent
+  agent,
+  timeout: 180000
 });
 
 const upload = async (local, remote) => {
