@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/banyudu/ali-oss-upload#readme",
   "dependencies": {
+    "agentkeepalive": "^4.1.2",
     "ali-oss": "^6.8.0",
     "chalk": "^4.0.0",
     "yargs": "^15.3.1"

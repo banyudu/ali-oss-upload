@@ -2,6 +2,8 @@
 const OSS = require('ali-oss')
 const yargs = require('yargs')
 const chalk = require('chalk')
+const fs = require('fs')
+const AgentKeepalive = require('agentkeepalive')
 
 const error = (msg, exit = false) => {
   console.error(chalk.red(msg))
@@ -43,36 +45,76 @@ const argv =
       demandOption: false,
       describe: 'cache-control, default no-cache'
     })
+    .option('input', {
+      demandOption: false,
+      describe: 'upload multiple files with an input file. Seperate local file and remote path with one space, one file per line.'
+    })
     .alias('help', 'h')
     .alias('version', 'v')
     .argv
 
-const localFile = argv._[0]
-const remotePath = argv._[1]
-
-if (!localFile || !remotePath) {
-  error('local-file and remote-path required!')
-  yargs.showHelp()
-  process.exit(1)
-}
-
-if (argv._.length > 2) {
-  error('Too many arguments!')
-  yargs.showHelp()
-  process.exit(1)
-}
+const agent = new AgentKeepalive({
+  maxSockets: 3
+});
 
 const ossClient = new OSS({
   region: argv.region,
   accessKeyId: argv.accessKeyId,
   accessKeySecret: argv.accessKeySecret,
-  bucket: argv.bucket
+  bucket: argv.bucket,
+  agent
 });
 
-(async () => {
-  await ossClient.put(remotePath, localFile, {
+const upload = async (local, remote) => {
+  console.log(local)
+  await ossClient.put(remote, local, {
     headers: {
       'Cache-Control': argv.cacheControl || 'no-cache'
     }
   })
-})().catch(console.error)
+}
+
+const todo = []
+
+if (argv.input) { // multiple files
+  const fileContent = fs.readFileSync(argv.input, 'utf8')
+  const lines = fileContent.split('\n')
+  for (const line of lines) {
+    const match = line.match(/\s*([^\s]+)\s+([^\s]+)\s*$/)
+    if (match) {
+      todo.push({
+        local: match[1],
+        remote: match[2]
+      })
+    }
+  }
+} else {
+  const localFile = argv._[0]
+  const remotePath = argv._[1]
+
+  if (!localFile || !remotePath) {
+    error('local-file and remote-path required!')
+    yargs.showHelp()
+    process.exit(1)
+  }
+
+  if (argv._.length > 2) {
+    error('Too many arguments!')
+    yargs.showHelp()
+    process.exit(1)
+  }
+  todo.push({
+    local: localFile,
+    remote: remotePath
+  })
+}
+
+(async () => {
+  await Promise.all(todo.map(item => upload(item.local, item.remote)))
+  // for (const item of todo) {
+    // await upload(item.local, item.remote)
+  // }
+})().catch(err => {
+  console.error(err)
+  process.exit(1)
+})
