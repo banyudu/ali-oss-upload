@@ -38,6 +38,11 @@ const argv =
       default: process.env.OSS_ACCESS_KEY_SECRET,
       describe: 'oss access key secret, default use OSS_ACCESS_KEY_SECRET environment variable'
     })
+    .option('cacheControl', {
+      alias: 'c',
+      demandOption: false,
+      describe: 'cache-control, default no-cache'
+    })
     .alias('help', 'h')
     .alias('version', 'v')
     .argv
@@ -65,5 +70,9 @@ const ossClient = new OSS({
 });
 
 (async () => {
-  await ossClient.put(remotePath, localFile)
+  await ossClient.put(remotePath, localFile, {
+    headers: {
+      'Cache-Control': argv.cacheControl || 'no-cache'
+    }
+  })
 })().catch(console.error)
